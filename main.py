@@ -5,50 +5,83 @@ from snake import Snake
 from score import Scoreboard
 
 
-scoreboard = Scoreboard()
-snake = Snake()
-food = Food()
+class Game:
 
-screen = Screen()
-screen.title("Snake Game")
-screen.setup(600, 600)
-screen.bgcolor("black")
-screen.tracer(0)
-screen.listen()
+    def __init__(self):
+        self.p = 0
+        self.scoreboard = Scoreboard()
+        self.snake = Snake()
+        self.food = Food()
 
-screen.onkey(snake.up, "Up")
-screen.onkey(snake.down, "Down")
-screen.onkey(snake.right, "Right")
-screen.onkey(snake.left, "Left")
+        self.screen = Screen()
+        self.screen.title("Snake Game")
+        self.screen.setup(600, 600)
+        self.screen.bgcolor("black")
+        self.screen.tracer(0)
+        self.screen.listen()
 
-snake.create_snake()
+    def end(self):
+        self.scoreboard.game_over()
+        self.food.hideturtle()
+        for segment in self.snake.segments:
+            segment.hideturtle()
 
-game = True
-while game:
-    screen.update()
-    time.sleep(0.08)
-    snake.move()
-    for segment in snake.segments:
-        if segment == snake.head:
-            pass
-        elif segment.distance(food) < 14:
-            food.refresh()
-    if snake.head.distance(food) < 14:
-        food.refresh()
-        scoreboard.increase_score()
-        snake.extend()
+        self.screen.update()
 
-    if snake.head.xcor() > 285 or snake.head.xcor() < -290 or snake.head.ycor() > 290 or snake.head.ycor() < -285:
-        game = False
-        scoreboard.game_over()
+        self.screen.exitonclick()
 
-    for segment in snake.segments:
-        if segment == snake.head:
-            pass
-        elif snake.head.distance(segment) < 8:
-            game = False
-            scoreboard.game_over()
+    def pause(self):
+        self.scoreboard.pause()
+        self.screen.update()
+        self.p = 1
+
+    def play(self):
+        self.p = 0
+        self.scoreboard.update_scoreboard()
+        self.screen.update()
 
 
+    def game(self):
+        self.screen.onkey(self.snake.up, "Up")
+        self.screen.onkey(self.snake.down, "Down")
+        self.screen.onkey(self.snake.right, "Right")
+        self.screen.onkey(self.snake.left, "Left")
+        self.screen.onkey(self.end, "e")
+        self.screen.onkey(self.pause, "p")
+        self.screen.onkey(self.play, "l")
 
-screen.exitonclick()
+        self.snake.create_snake()
+        game = True
+
+        while game:
+            self.screen.update()
+            time.sleep(0.08)
+            if self.p == 0:
+                self.snake.move()
+            for segment in self.snake.segments:
+                if segment == self.snake.head:
+                    pass
+                elif segment.distance(self.food) < 14:
+                    self.food.refresh()
+            if self.snake.head.distance(self.food) < 14:
+                self.food.refresh()
+                self.scoreboard.increase_score()
+                self.snake.extend()
+
+            if self.snake.head.xcor() > 285 or self.snake.head.xcor() < -290 or self.snake.head.ycor() > 290 or self.snake.head.ycor() < -285:
+                self.scoreboard.reset()
+                self.scoreboard.update_scoreboard()
+                self.snake.reset()
+
+            for segment in self.snake.segments:
+                if segment == self.snake.head:
+                    pass
+                elif self.snake.head.distance(segment) < 8:
+                    self.scoreboard.reset()
+                    self.scoreboard.update_scoreboard()
+                    self.snake.reset()
+
+        self.screen.exitonclick()
+
+
+
